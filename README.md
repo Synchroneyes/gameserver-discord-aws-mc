@@ -24,6 +24,7 @@ Before getting started with the project, make sure you have the following prereq
 - AWS CLI
 - NodeJS (v20)
 - Python 3.10+
+- Terraform
 
 ## How to get Discord Channels and Roles ID ?
 1. Head into your Discord Settings
