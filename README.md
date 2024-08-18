@@ -7,8 +7,7 @@ This documentation provides an overview of the "gameserver-discord-aws-mc" proje
 - [Prerequisites](#prerequisites)
 - [How to use](#how-to-use)
 - [Technologies](#technologies)
-- [Contributing](#contributing)
-- [License](#license)
+
 
 ## Overview
 This documentation provides an overview of the "mineralcontest-discord-server-provider" project and its components. It includes information on how to set up and use the project, as well as details on the technologies and tools used.
