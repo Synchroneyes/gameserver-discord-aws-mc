@@ -1,6 +1,6 @@
 # Project Documentation
 ## Overview
-This documentation provides an overview of the "mineralcontest-discord-server-provider" project and its components. It includes information on how to set up and use the project, as well as details on the technologies and tools used.
+This documentation provides an overview of the "gameserver-discord-aws-mc" project and its components. It includes information on how to set up and use the project, as well as details on the technologies and tools used.
 
 ## Table of Contents
 - [Overview](#overview)
