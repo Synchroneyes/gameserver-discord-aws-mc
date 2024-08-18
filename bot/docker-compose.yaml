@@ -1,0 +1,9 @@
+version: '3'
+
+services:
+  mineralcontest_bot:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: always
+    network_mode: host
