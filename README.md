@@ -51,10 +51,4 @@ This project utilizes the following technologies and tools:
 - ECS: A container orchestration service used for managing game server instances.
 - JavaScript: A programming language used for developing the Discord bot that interacts with AWS.
 
-## Contributing
-Contributions to this project are welcome. To contribute, please follow the guidelines outlined in the [CONTRIBUTING.md](CONTRIBUTING.md) file.
-
-## License
-This project is licensed under the [MIT License](LICENSE).
-
 
