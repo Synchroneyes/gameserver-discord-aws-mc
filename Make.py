@@ -14,6 +14,14 @@ def get_discord_client_id(env_file_path):
         else:
             raise ValueError("DISCORD_CLIENT_ID not found in the .env file")
 
+def ask_confirmation_before_continue(message):
+    print(message)
+    while True:
+        user_input = input("Please enter 'yes' to continue: ").strip().lower()
+        if user_input == "yes":
+            break
+        else:
+            print(f"Please enter 'yes' to continue, received: {user_input}")
 
 def run_command(command, shell=True, cwd=None):
     try:
@@ -77,6 +85,7 @@ def terraform_init(config):
 def deploy(config):
     terraform_folder = config['TERRAFORM_FOLDER']
     run_command(f"{terraform_command} apply --auto-approve", cwd=terraform_folder)
+    ask_confirmation_before_continue("Please make sure to save the credentials above before continuing, you will not be able to retrieve them later.")
 
 def destroy(config):
     aws_region = config['AWS_REGION']
