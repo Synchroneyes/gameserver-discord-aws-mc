@@ -1,3 +1,4 @@
 pyyaml
 inquirer
 argparse
+shortuuid

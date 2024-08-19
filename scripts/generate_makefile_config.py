@@ -1,6 +1,12 @@
 import inquirer
 import argparse
+import shortuuid
 
+def bucket_name_validation(answers, current):
+    if len(current) >= 64:
+        raise inquirer.errors.ValidationError("", reason="The S3 Bucket name should not be more than 64 characters.")
+
+    return True
 
 def generate_config_file(args):
     # Define the questions with defaults from command-line arguments or provided default values
@@ -33,8 +39,9 @@ def generate_config_file(args):
         ),
         inquirer.Text(
             "S3_BUCKET_NAME",
-            message="Enter the S3 Bucket Name",
-            default=args.s3_bucket_name or "mineralcontest-bot-remote-state",
+            message="Enter the S3 Bucket Name, note that this name should be unique and not exceed 64 characters",
+            default=args.s3_bucket_name or "mineralcontest-remote-state-" + shortuuid.uuid(),
+            validate=bucket_name_validation
         ),
         inquirer.Text(
             "DYNAMODB_TABLE_NAME",
