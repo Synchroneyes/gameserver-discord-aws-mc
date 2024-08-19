@@ -94,7 +94,7 @@ def destroy(config):
     bot_folder = config['BOT_FOLDER']
 
     run_command(f"{terraform_command} destroy --auto-approve", cwd=terraform_folder)
-    run_command(f"aws lambda invoke --region {aws_region} --function-name CleanupFunction output.txt")
+    run_command(f"aws lambda invoke --no-cli-pager --region {aws_region} --function-name CleanupFunction output.txt")
     os.remove("output.txt")
     run_command(f"aws cloudformation delete-stack --region {aws_region} --stack-name {stack_name}")
     run_command(f"docker compose down --rmi --volumes", cwd=bot_folder)
