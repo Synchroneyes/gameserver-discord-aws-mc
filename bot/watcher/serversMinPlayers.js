@@ -49,7 +49,7 @@ function watchServersMinPlayers() {
     
             q.fullStat().then((data) => {
                 q.close();
-                let current_players_count = data.online_players;
+                let current_players_count = parseInt(data.online_players);
                 let current_warnings = getWarnings(serverIp);
     
                 if(current_warnings >= process.env.GAMESERVER_MIN_REQUIRED_PLAYERS_WARNING_COUNT) {
@@ -57,10 +57,7 @@ function watchServersMinPlayers() {
                     return
                 }
 
-
-    
-    
-                if(current_players_count < process.env.GAMESERVER_MIN_REQUIRED_PLAYERS) {
+                if(current_players_count < parseInt(process.env.GAMESERVER_MIN_REQUIRED_PLAYERS)) {
                     addWarning(serverIp);
 
                     if(current_warnings === -1) {return ;}
