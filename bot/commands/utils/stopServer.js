@@ -1,18 +1,18 @@
-const { SlashCommandBuilder} = require('discord.js');
+const { SlashCommandBuilder } = require('discord.js');
 const { getLocalDatabase } = require('../../services/serverDatabase');
-const {getUser} = require('../../services/discord');
+const { getUser } = require('../../services/discord');
 const { killServer } = require('../../services/killServer');
-
+const { getClusterARN } = require('../../services/ecs');
 require('dotenv').config()
 
 
 async function getAdminAutocomplete() {
     let localDatabase = getLocalDatabase();
     let choices = [];
-    for(let taskId in localDatabase){
+    for (let taskId in localDatabase) {
         let task = localDatabase[taskId];
         let member = await getUser(task.userId);
-        choices.push({name: "Serveur de " + member.user.globalName, value: taskId});
+        choices.push({ name: "Serveur de " + member.user.globalName, value: taskId });
     }
     return choices;
 }
@@ -20,63 +20,69 @@ async function getAdminAutocomplete() {
 async function getUserAutocomplete(userId) {
     let localDatabase = getLocalDatabase();
     let choices = [];
-    for(let taskId in localDatabase){
+    for (let taskId in localDatabase) {
         let task = localDatabase[taskId];
-        if(task.userId === userId){
-            choices.push({name: "Mon serveur", value: taskId});
+        if (task.userId === userId) {
+            choices.push({ name: "Mon serveur", value: taskId });
         }
     }
     return choices;
 }
 
 module.exports = {
-	data: new SlashCommandBuilder()
-		.setName('stop-serveur')
-		.setDescription("Permet de stopper le serveur Minecraft à la demande.")
-		.addStringOption(option =>
-			option.setName('serveur')
-				.setDescription('Quel serveur est à stopper ?')
+    data: new SlashCommandBuilder()
+        .setName('stop-serveur')
+        .setDescription("Permet de stopper le serveur Minecraft à la demande.")
+        .addStringOption(option =>
+            option.setName('serveur')
+                .setDescription('Quel serveur est à stopper ?')
                 .setRequired(true)
-				.setAutocomplete(true)),
+                .setAutocomplete(true)),
 
-    async autocomplete(interaction){
+    async autocomplete(interaction) {
         let member = interaction.member;
 
         let isAdmin = member.roles.cache.some(role => role.id === process.env.DISCORD_ADMIN_ROLE_ID);
 
-        if(isAdmin) choices = await getAdminAutocomplete();
+        if (isAdmin) choices = await getAdminAutocomplete();
         else choices = await getUserAutocomplete(member.id);
 
-        if(choices.length === 0){
-            choices.push({name: "Il n'y a aucun serveur à arrêter", value: "none"})
+        if (choices.length === 0) {
+            choices.push({ name: "Il n'y a aucun serveur à arrêter", value: "none" })
         }
 
-		await interaction.respond(
-			choices.map(choice => ({ name: choice.name, value: choice.value })),
-		);
+        await interaction.respond(
+            choices.map(choice => ({ name: choice.name, value: choice.value.split('/')[2] })),
+        );
     },
-		
-	async execute(interaction) {
-        let localDatabase = getLocalDatabase();
-		let member = interaction.member;
-        let serverToKill = interaction.options.getString('serveur');
 
-        if(serverToKill === 'none'){
+    async execute(interaction) {
+        let localDatabase = getLocalDatabase();
+        let member = interaction.member;
+        let serverToKill = interaction.options.getString('serveur');
+        let clusterArn = (await getClusterARN(process.env.AWS_ECS_CLUSTER_NAME)).replace(":cluster/", ":task/");
+
+
+        const serverArn = `${clusterArn}/${interaction.options.getString('serveur')}`
+
+        if (serverToKill === 'none') {
             await interaction.reply({ content: "Il n'y a aucun serveur à arrêter.", ephemeral: true });
             return
         }
 
-        if(!localDatabase[serverToKill]){
+        console.log(localDatabase, serverArn, localDatabase[serverArn])
+        if (!localDatabase[serverArn]) {
             await interaction.reply({ content: "Le serveur n'existe pas.", ephemeral: true });
             return;
         }
 
-        if(localDatabase[serverToKill].userId !== member.id && !member.roles.cache.some(role => role.id === process.env.DISCORD_ADMIN_ROLE_ID)){
+        if (localDatabase[serverArn].userId !== member.id && !member.roles.cache.some(role => role.id === process.env.DISCORD_ADMIN_ROLE_ID)) {
             await interaction.reply({ content: "Vous n'avez pas la permission de stopper ce serveur.", ephemeral: true });
             return;
         }
 
-        await killServer(interaction.options.getString('serveur'));
+
+        await killServer(serverArn);
         await interaction.reply({ content: "Le serveur a bien été stoppé.", ephemeral: true });
-	},
+    },
 };

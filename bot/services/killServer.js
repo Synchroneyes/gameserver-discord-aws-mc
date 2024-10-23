@@ -1,13 +1,13 @@
 // Import required AWS SDK clients and commands for Node.js
 var aws_library = require("aws-sdk");
-const {deleteEcsTask, getTaskDetails} = require("./serverDatabase");
+const { deleteEcsTask, getTaskDetails } = require("./serverDatabase");
 const { deleteChannel } = require("./discord");
 
 require('dotenv').config()
 
 
 const params = {
-    region: process.env.AWS_REGION, 
+    region: process.env.AWS_REGION,
     credentials: {
         accessKeyId: process.env.AWS_ACCESS_KEY_ID,
         secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY_ID,

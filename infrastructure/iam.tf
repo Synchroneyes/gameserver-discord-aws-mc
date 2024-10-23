@@ -59,6 +59,7 @@ resource "aws_iam_policy" "bot_policy" {
       {
         Action = [
           "ec2:DescribeNetworkInterfaces*",
+          "ecs:ListClusters"
         ]
         Effect   = "Allow"
         Resource = "*"

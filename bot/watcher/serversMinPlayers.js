@@ -12,8 +12,8 @@ function addWarning(serverIp) {
     serversWarningList[serverIp] = serversWarningList[serverIp] + 1;
 }
 
-function getWarnings (serverIp) {
-    if(serversWarningList[serverIp] === undefined) {
+function getWarnings(serverIp) {
+    if (serversWarningList[serverIp] === undefined) {
         serversWarningList[serverIp] = -1
         return -1;
     }
@@ -30,51 +30,54 @@ function getWarnings (serverIp) {
  */
 function watchServersMinPlayers() {
 
-  return setInterval(async () => {
-    const localDatabase = getLocalDatabase();
+    return setInterval(async () => {
+        const localDatabase = getLocalDatabase();
 
-    for(let taskArn in localDatabase) {
-        let task = localDatabase[taskArn];
-        let serverIp = task.publicIpAddress;
-        let channelId = task.channelId
-        let userId = task.userId
+        for (let taskArn in localDatabase) {
+            let task = localDatabase[taskArn];
+            let serverIp = task.publicIpAddress;
+            let channelId = task.channelId
+            let userId = task.userId
 
-        try {
-            const q = new MinecraftQuery({
-                host: serverIp,
-                port: 25565,
-                timeout: 7500,
-            });
-    
-    
-            q.fullStat().then((data) => {
-                q.close();
-                let current_players_count = parseInt(data.online_players);
-                let current_warnings = getWarnings(serverIp);
-    
-                if(current_warnings >= process.env.GAMESERVER_MIN_REQUIRED_PLAYERS_WARNING_COUNT) {
-                    killServer(taskArn);
-                    return
-                }
+            try {
+                const q = new MinecraftQuery({
+                    host: serverIp,
+                    port: 25565,
+                    timeout: 7500,
+                });
 
-                if(current_players_count < parseInt(process.env.GAMESERVER_MIN_REQUIRED_PLAYERS)) {
-                    addWarning(serverIp);
 
-                    if(current_warnings === -1) {return ;}
-                    sendMessage(channelId, `[AVERTISSEMENT ${current_warnings+1}/${process.env.GAMESERVER_MIN_REQUIRED_PLAYERS_WARNING_COUNT}] Attention <@${userId}>, le serveur ${serverIp} n'a pas atteint le nombre de joueurs minimum requis. (${current_players_count}/${process.env.GAMESERVER_MIN_REQUIRED_PLAYERS}).`);
-                }
-    
-            }).catch((err) => {
+                q.fullStat().then((data) => {
+                    q.close();
+                    let current_players_count = data.online_players;
+                    let current_warnings = getWarnings(serverIp);
+
+                    if (current_warnings >= process.env.GAMESERVER_MIN_REQUIRED_PLAYERS_WARNING_COUNT) {
+                        killServer(taskArn);
+                        return
+                    }
+
+
+
+
+                    if (parseInt(current_players_count) < parseInt(process.env.GAMESERVER_MIN_REQUIRED_PLAYERS)) {
+                        addWarning(serverIp);
+
+                        if (current_warnings === -1) { return; }
+                        sendMessage(channelId, `[AVERTISSEMENT ${current_warnings + 1}/${process.env.GAMESERVER_MIN_REQUIRED_PLAYERS_WARNING_COUNT}] Attention <@${userId}>, le serveur ${serverIp} n'a pas atteint le nombre de joueurs minimum requis. (${current_players_count}/${process.env.GAMESERVER_MIN_REQUIRED_PLAYERS}).`);
+                    }
+
+                }).catch((err) => {
+                    // server initialization might not be over
+                    q.close();
+                });
+
+            } catch (e) {
                 // server initialization might not be over
-                q.close();
-            });
+            }
 
-        }catch(e){
-            // server initialization might not be over
         }
-
-    }
-  }, process.env.GAMESERVER_MIN_REQUIRED_PLAYERS_WARNING_DURATION);
+    }, process.env.GAMESERVER_MIN_REQUIRED_PLAYERS_WARNING_DURATION);
 }
 
 module.exports = { watchServersMinPlayers };
